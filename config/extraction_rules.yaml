@@ -1,0 +1,161 @@
+# Extraction rules for trade document OCR pipeline.
+# Defines regex patterns and field rules per document type.
+
+classification:
+  bill_of_lading:
+    keywords:
+      - bill of lading
+      - b/l
+      - shipper
+      - consignee
+      - vessel
+      - port of loading
+      - port of discharge
+    default_weight: 2.0
+
+  commercial_invoice:
+    keywords:
+      - commercial invoice
+      - invoice
+      - seller
+      - buyer
+      - unit price
+      - total amount
+    default_weight: 2.0
+
+  certificate_of_origin:
+    keywords:
+      - certificate of origin
+      - country of origin
+      - chamber of commerce
+      - manufacturer
+      - hereby certify
+    default_weight: 2.0
+
+  packing_list:
+    keywords:
+      - packing list
+      - gross weight
+      - net weight
+      - carton
+      - package
+      - dimensions
+    default_weight: 2.0
+
+document_types:
+  commercial_invoice:
+    fields:
+      invoice_number:
+        patterns:
+          - '(?:invoice|inv)[.\s#:]*(?:no|number|num|nr)?[.\s#:]*([A-Za-z0-9\-/]+)'
+        required: true
+      invoice_date:
+        patterns:
+          - '(?:invoice\s*date|date)[:\s]*(\d{4}-\d{2}-\d{2})'
+          - '(?:invoice\s*date|date)[:\s]*(\d{1,2}[/\.]\d{1,2}[/\.]\d{4})'
+        required: true
+      seller:
+        patterns:
+          - '(?:seller|exporter|shipper|from)[:\s]*([^\n]{5,80})'
+        required: true
+      buyer:
+        patterns:
+          - '(?:buyer|importer|consignee|to|bill\s*to)[:\s]*([^\n]{5,80})'
+        required: true
+      currency:
+        patterns:
+          - '(?:currency)[:\s]*(USD|EUR|GBP|AZN|RUB|TRY)'
+          - '(USD|EUR|GBP|AZN|RUB|TRY)\s*\d'
+        required: false
+      total_amount:
+        patterns:
+          - '(?:total|amount|sum|value)[:\s]*[^\d]*([\d,]+\.?\d*)'
+        required: true
+      incoterms:
+        patterns:
+          - '(?:incoterms?|terms?\s*of\s*delivery)[:\s]*(EXW|FCA|FAS|FOB|CFR|CIF|CPT|CIP|DAP|DPU|DDP)'
+        required: false
+
+  bill_of_lading:
+    fields:
+      bl_number:
+        patterns:
+          - '(?:b/?l|bill\s*of\s*lading)[.\s#:]*(?:no|number|num|nr)?[.\s#:]*([A-Za-z0-9\-/]+)'
+        required: true
+      vessel:
+        patterns:
+          - '(?:vessel|ship|carrier)[:\s]*([^\n]{3,60})'
+        required: false
+      port_of_loading:
+        patterns:
+          - '(?:port\s*of\s*loading|loading\s*port|POL)[:\s]*([^\n]{3,60})'
+        required: true
+      port_of_discharge:
+        patterns:
+          - '(?:port\s*of\s*discharge|discharge\s*port|POD)[:\s]*([^\n]{3,60})'
+        required: true
+      shipper:
+        patterns:
+          - '(?:shipper|consignor)[:\s]*([^\n]{5,80})'
+        required: true
+      consignee:
+        patterns:
+          - '(?:consignee)[:\s]*([^\n]{5,80})'
+        required: true
+      container_number:
+        patterns:
+          - '([A-Z]{4}\d{7})'
+        required: false
+
+  certificate_of_origin:
+    fields:
+      certificate_number:
+        patterns:
+          - '(?:certificate|cert)[.\s#:]*(?:no|number|num|nr)?[.\s#:]*([A-Za-z0-9\-/]+)'
+        required: true
+      country_of_origin:
+        patterns:
+          - '(?:country\s*of\s*origin|origin)[:\s]*([^\n]{2,60})'
+        required: true
+      manufacturer:
+        patterns:
+          - '(?:manufacturer|producer)[:\s]*([^\n]{5,80})'
+        required: false
+      certifying_authority:
+        patterns:
+          - '(?:certif(?:ying|ied)\s*(?:by|authority)|chamber\s*of\s*commerce|authority)[:\s]*([^\n]{5,80})'
+        required: false
+
+  packing_list:
+    fields:
+      package_count:
+        patterns:
+          - '(?:packages?|cartons?|boxes?|pieces?|pcs)[:\s]*(\d+)'
+        required: true
+      gross_weight:
+        patterns:
+          - '(?:gross\s*weight|G\.?W\.?)[:\s]*([\d.,]+)'
+        required: true
+      net_weight:
+        patterns:
+          - '(?:net\s*weight|N\.?W\.?)[:\s]*([\d.,]+)'
+        required: true
+      dimensions:
+        patterns:
+          - '(\d+(?:\.\d+)?\s*[xX\xd7]\s*\d+(?:\.\d+)?\s*[xX\xd7]\s*\d+(?:\.\d+)?)\s*(?:cm|mm|m)?'
+        required: false
+
+# Supported languages for OCR
+languages:
+  - code: eng
+    name: English
+  - code: rus
+    name: Russian
+  - code: aze
+    name: Azerbaijani
+
+# Common HS code chapters for trade document validation
+hs_code_validation:
+  min_digits: 4
+  max_digits: 10
+  valid_chapters: "01-99"

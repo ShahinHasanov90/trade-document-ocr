@@ -1,0 +1,7 @@
+pytesseract>=0.3.10
+Pillow>=9.0.0
+opencv-python-headless>=4.6.0
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+pyyaml>=6.0
